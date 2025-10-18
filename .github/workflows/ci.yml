@@ -28,4 +28,4 @@ jobs:
       - name: Run tests
         run: poetry run pytest -v
       - name: Fake deploy
-        run: echo "🚀 Deploying backend to test environment..."
+        run: echo "Deploying backend to test environment..."
