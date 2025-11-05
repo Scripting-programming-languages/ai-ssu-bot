@@ -4,6 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1
 
 COPY ./backend ./backend
+RUN apt-get update && apt-get install -y dos2unix \
+    && dos2unix /backend/start.sh
 WORKDIR /backend
 ENV PYTHONPATH=/backend/
 

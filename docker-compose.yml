@@ -37,7 +37,7 @@ services:
       context: .
       dockerfile: fastapi.Dockerfile
     pull_policy: build
-    entrypoint: sh -c "./start.sh"
+    #entrypoint: sh -c "./start.sh"
 
 
 networks:
