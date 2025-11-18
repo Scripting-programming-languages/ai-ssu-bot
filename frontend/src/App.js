@@ -6,10 +6,35 @@ function App() {
     { text: 'Здравствуйте! Чем я могу вам помочь?', sender: 'bot' },
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [isFaqVisible, setIsFaqVisible] = useState(false);
+  const [activeFaqIndex, setActiveFaqIndex] = useState(null);
   const messagesEndRef = useRef(null);
 
+  const faqData = [
+    {
+      question: 'Что это за сервис?',
+      answer: 'Это умный помощник, созданный для ответов на ваши вопросы в режиме реального времени.',
+    },
+    {
+      question: 'Вопрос?',
+      answer: 'Ответ',
+    },
+    {
+      question: 'Вопрос?',
+      answer: 'Ответ',
+    },
+    {
+      question: 'Вопрос?',
+      answer: 'Ответ',
+    },
+    {
+      question: 'Вопрос?',
+      answer: 'Ответ',
+    },
+  ];
+
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -32,7 +57,12 @@ function App() {
   };
 
   const handleFaqClick = () => {
-    alert('Раздел в разработке!');
+    setIsFaqVisible(!isFaqVisible);
+    setActiveFaqIndex(null);
+  };
+
+  const handleFaqItemClick = (index) => {
+    setActiveFaqIndex(activeFaqIndex === index ? null : index);
   };
 
   return (
@@ -45,17 +75,34 @@ function App() {
         <main className="chatbot-messages">
           {messages.map((message, index) => (
             <div key={index} className={`message-wrapper ${message.sender}`}>
-              <div className="message">
-                {message.text}
-              </div>
+              <div className="message">{message.text}</div>
             </div>
           ))}
           <div ref={messagesEndRef} />
         </main>
 
         <footer className="chatbot-footer">
+          {isFaqVisible && (
+            <div className="faq-section">
+              {faqData.map((item, index) => (
+                <div
+                  key={index}
+                  className={`faq-item ${activeFaqIndex === index ? 'active' : ''}`}
+                  onClick={() => handleFaqItemClick(index)}
+                >
+                  <div className="faq-question">
+                    {item.question}
+                    <span>{activeFaqIndex === index ? '−' : '+'}</span>
+                  </div>
+                  <div className="faq-answer">{item.answer}</div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="faq-button-container">
-            <button onClick={handleFaqClick}>Просмотреть ЧаВо</button>
+            <button onClick={handleFaqClick}>
+              {isFaqVisible ? 'Скрыть ЧаВо' : 'Просмотреть ЧаВо'}
+            </button>
           </div>
           <div className="chatbot-input-area">
             <input
