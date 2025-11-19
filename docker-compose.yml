@@ -44,6 +44,8 @@ services:
     image: fastapi_app
     volumes:
       - ./backend:/backend
+      - ./data:/backend/data 
+      - E:/hf_cache:/root/.cache/huggingface
     env_file:
       - .env
     networks:

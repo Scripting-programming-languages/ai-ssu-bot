@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 from qdrant_client import QdrantClient
 
+from upd_qdrant import update_qdrant
+
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -61,6 +63,15 @@ def create_app() -> FastAPI:
     async def qdrant_check():
         info = qdrant_client.get_collections()
         return {"qdrant_collections": info.model_dump()}
+    
+    @app.post("/update-qdrant")
+    async def update_qdrant_endpoint():
+        global qdrant_client
+        if not qdrant_client:
+            return {"error": "Qdrant client is not initialized"}
+
+        result = await asyncio.to_thread(update_qdrant, qdrant_client)
+        return result
 
     return app
 
