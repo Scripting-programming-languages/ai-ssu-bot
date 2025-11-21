@@ -1,5 +1,6 @@
 from typing import Type
 
+from uuid import UUID
 from sqlalchemy import insert, update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +18,7 @@ class SessionRepository:
         await session.commit()
         return SessionRead.model_validate(obj=created_session)
 
-    async def deactivate_session(self, session: AsyncSession, session_id: str) -> SessionRead:
+    async def deactivate_session(self, session: AsyncSession, session_id: UUID) -> SessionRead:
         query = (
             update(self._collection)
             .where(self._collection.id == session_id)
@@ -31,3 +32,14 @@ class SessionRepository:
             raise SessionNotFound(_id=session_id)
 
         return SessionRead.model_validate(obj=updated_session)
+
+    # Находит активную (is_active == True) сессию по session_id. В противном случае кидает ошибку SessionNotFound
+    async def check_active_session(self, session: AsyncSession, session_id: UUID) -> SessionRead:
+        query = select(self._collection).where(
+            self._collection.id == session_id,
+            self._collection.is_active is True
+        )
+        result = await session.scalar(query)
+        if not result:
+            raise SessionNotFound(_id=session_id)
+        return SessionRead.model_validate(obj=result)

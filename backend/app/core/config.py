@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     # PostgreSQL
     POSTGRES_SCHEMA: str = "ssu_bot"
-    POSTGRES_HOST: str = "db"  # имя контейнера PostgreSQL
+    POSTGRES_HOST: str = "db"
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: SecretStr
