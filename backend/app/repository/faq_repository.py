@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model.faq import FAQ
-from app.schema.faqSchema import FAQRead
+from app.schema.faq_schema import FAQRead
 from app.core.exception.faq_exception import FAQNotFound
 
 

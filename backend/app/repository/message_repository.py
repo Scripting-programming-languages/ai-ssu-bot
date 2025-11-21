@@ -3,7 +3,7 @@ from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model.message import Message
-from app.schema.messageSchema import MessageCreate, MessageRead
+from app.schema.message_schema import MessageCreate, MessageRead
 from app.core.exception.message_exception import MessageNotFound
 
 

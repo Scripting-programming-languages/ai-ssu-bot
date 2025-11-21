@@ -4,7 +4,7 @@ from sqlalchemy import insert, update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.model.session import Session
-from app.schema.sessionSchema import SessionRead
+from app.schema.session_schema import SessionRead
 from app.core.exception.session_exception import SessionNotFound
 
 
