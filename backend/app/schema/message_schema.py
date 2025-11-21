@@ -10,7 +10,7 @@ class MessageCreate(MessageBase):
 
 class MessageRead(MessageBase):
     id: int
-    session_id: UUID
     created_at: datetime
+    answer: str = Field(..., max_length=3000)
 
     model_config = ConfigDict(from_attributes=True)

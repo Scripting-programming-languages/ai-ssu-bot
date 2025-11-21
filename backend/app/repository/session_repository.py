@@ -37,7 +37,7 @@ class SessionRepository:
     async def check_active_session(self, session: AsyncSession, session_id: UUID) -> SessionRead:
         query = select(self._collection).where(
             self._collection.id == session_id,
-            self._collection.is_active is True
+            self._collection.is_active == True
         )
         result = await session.scalar(query)
         if not result:

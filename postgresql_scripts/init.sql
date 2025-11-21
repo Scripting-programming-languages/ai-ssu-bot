@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS messages_tab (
     id BIGSERIAL PRIMARY KEY,
     session_id UUID NOT NULL REFERENCES session_tab(id) ON DELETE CASCADE,
     content VARCHAR(2000) NOT NULL,
+    answer VARCHAR(3000) NOT NULL DEFAULT '',
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

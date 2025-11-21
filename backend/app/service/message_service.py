@@ -25,8 +25,7 @@ class MessageService:
             session_id=dto.sessionId,
             content=dto.query
         )
-        new_message: MessageRead = await self.repo.create_message(session=session, message=message_dto)
-
         # TODO: здесь будет логика RAG, генерации ответа
 
+        new_message: MessageRead = await self.repo.create_message(session=session, message=message_dto)
         return new_message

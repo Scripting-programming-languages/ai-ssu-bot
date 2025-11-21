@@ -10,4 +10,5 @@ class Message(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     session_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("session_tab.id", ondelete="CASCADE"), nullable=False)
     content: Mapped[str] = mapped_column(String(2000), nullable=False)
+    answer: Mapped[str] = mapped_column(String(3000), nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
