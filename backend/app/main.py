@@ -4,11 +4,12 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
 from app.core.database import database, metadata
 from app.core.config import settings
 from app.api import ssu_bot_api
+from app.api import health_api
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(ssu_bot_api.router)
+    app.include_router(health_api.router)
 
     return app
 
