@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "db"
     POSTGRES_DB: str = "postgres"
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: SecretStr = "user"
-    POSTGRES_PASSWORD: SecretStr = "password"
+    POSTGRES_USER: SecretStr
+    POSTGRES_PASSWORD: SecretStr
     POSTGRES_RECONNECT_INTERVAL_SEC: int = 1
 
     @property
