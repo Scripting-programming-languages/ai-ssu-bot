@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+const API_BASE_URL = 'http://localhost:8000';
+
 function App() {
   const [messages, setMessages] = useState([
     { text: 'Здравствуйте! Чем я могу вам помочь?', sender: 'bot' },
@@ -10,28 +12,32 @@ function App() {
   const [activeFaqIndex, setActiveFaqIndex] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const faqData = [
-    {
-      question: 'Что это за сервис?',
-      answer: 'Это умный помощник, созданный для ответов на ваши вопросы в режиме реального времени.',
-    },
-    {
-      question: 'Вопрос?',
-      answer: 'Ответ',
-    },
-    {
-      question: 'Вопрос?',
-      answer: 'Ответ',
-    },
-    {
-      question: 'Вопрос?',
-      answer: 'Ответ',
-    },
-    {
-      question: 'Вопрос?',
-      answer: 'Ответ',
-    },
-  ];
+  const [faqData, setFaqData] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
+
+  useEffect(() => {
+    const initializeChat = async () => {
+      try {
+        const sessionResponse = await fetch(`${API_BASE_URL}/addChat`, {
+          method: 'POST',
+        });
+        if (!sessionResponse.ok) throw new Error('Ошибка создания сессии');
+        const sessionData = await sessionResponse.json();
+        setSessionId(sessionData.sessionId);
+
+        const faqResponse = await fetch(`${API_BASE_URL}/getFAQ`);
+        if (!faqResponse.ok) throw new Error('Ошибка загрузки FAQ');
+        const faqItems = await faqResponse.json();
+        setFaqData(faqItems);
+
+      } catch (error) {
+        console.error("Ошибка инициализации:", error);
+        setMessages(prev => [...prev, { text: 'Не удалось подключиться к серверу. Попробуйте обновить страницу.', sender: 'bot' }]);
+      }
+    };
+
+    initializeChat();
+  }, []); 
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,19 +47,42 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() === '') return;
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === '' || !sessionId) return;
 
-    const newMessages = [...messages, { text: inputValue, sender: 'user' }];
-    setMessages(newMessages);
+    const userMessage = { text: inputValue, sender: 'user' };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    const currentInput = inputValue; 
     setInputValue('');
 
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/sendQuery`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: currentInput,
+          sessionId: sessionId
+        }),
+      });
+
+      if (!response.ok) throw new Error('Ошибка ответа сервера');
+
+      const data = await response.json();
+
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: 'абоба', sender: 'bot' },
+        { text: data.result, sender: 'bot' },
       ]);
-    }, 1000);
+
+    } catch (error) {
+      console.error("Ошибка отправки сообщения:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: 'Произошла ошибка при отправке сообщения. Пожалуйста, попробуйте еще раз.', sender: 'bot' },
+      ]);
+    }
   };
 
   const handleFaqClick = () => {
@@ -86,7 +115,7 @@ function App() {
             <div className="faq-section">
               {faqData.map((item, index) => (
                 <div
-                  key={index}
+                  key={item.id}
                   className={`faq-item ${activeFaqIndex === index ? 'active' : ''}`}
                   onClick={() => handleFaqItemClick(index)}
                 >
@@ -100,7 +129,7 @@ function App() {
             </div>
           )}
           <div className="faq-button-container">
-            <button onClick={handleFaqClick}>
+            <button onClick={handleFaqClick} disabled={!faqData.length}>
               {isFaqVisible ? 'Скрыть ЧаВо' : 'Просмотреть ЧаВо'}
             </button>
           </div>
@@ -110,9 +139,10 @@ function App() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Спросите что-нибудь..."
+              placeholder={sessionId ? "Спросите что-нибудь..." : "Загрузка сессии..."} 
+              disabled={!sessionId} 
             />
-            <button onClick={handleSendMessage}>➤</button>
+            <button onClick={handleSendMessage} disabled={!sessionId}>➤</button>
           </div>
         </footer>
       </div>
