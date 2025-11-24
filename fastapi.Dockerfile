@@ -1,17 +1,17 @@
 FROM python:3.12-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y libsm6 libxext6 ffmpeg libfontconfig1 libxrender1 libgl1
+RUN apt-get update && apt-get install -y dos2unix 
 
 COPY ./backend ./backend
-RUN apt-get update && apt-get install -y dos2unix \
-    && dos2unix /backend/start.sh
+RUN dos2unix /backend/start.sh
 WORKDIR /backend
 ENV PYTHONPATH=/backend/
 
 # Установка зависимостей напрямую через pip
 RUN pip install --upgrade pip
-RUN pip install .
+RUN pip install --no-cache-dir https://download.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl
+RUN pip install --no-cache-dir .
 
 RUN chmod +x ./start.sh
 EXPOSE 8000
