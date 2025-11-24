@@ -9,8 +9,12 @@ from qdrant_client import QdrantClient
 from upd_qdrant import update_qdrant
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from starlette.middleware.cors import CORSMiddleware
+from app.core.database import database, metadata
+from app.core.config import settings
+from app.api import ssu_bot_api
+from app.api import health_api
 
 qdrant_client: QdrantClient | None = None
 
@@ -29,6 +33,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.info("Connected to Qdrant")
     except Exception as e:
         logger.error(f"Failed to connect to Qdrant: {e}")
+    # Выполняем рефлексию базы данных
+    async with database.engine.begin() as conn:
+        await conn.run_sync(metadata.reflect, views=True)
 
     yield
 
@@ -38,38 +45,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(
-        lifespan=lifespan
-    )
-
+    app_options = {}
+    app = FastAPI(lifespan=lifespan, root_path=settings.ROOT_PATH, **app_options)
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
+        CORSMiddleware,  # type: ignore
+        allow_origins=settings.ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.include_router(ssu_bot_api.router)
+    app.include_router(health_api.router)
 
-    # Пример простого эндпоинта
-    @app.get("/")
-    async def read_root():
-        return {"message": "Hello, World!"}
-
-    @app.get("/health")
-    async def health_check():
-        return {"status": "ok"}
-    
     @app.get("/qdrant-check")
     async def qdrant_check():
         info = qdrant_client.get_collections()
         return {"qdrant_collections": info.model_dump()}
-    
+
     @app.post("/update-qdrant")
     async def update_qdrant_endpoint():
         global qdrant_client
         if not qdrant_client:
             return {"error": "Qdrant client is not initialized"}
-
         result = await asyncio.to_thread(update_qdrant, qdrant_client)
         return result
 
