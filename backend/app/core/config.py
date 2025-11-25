@@ -3,6 +3,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # LLM API
+    API_KEY: str = "io-v2-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lciI6ImUzNDRlZjExLTQ0NzItNDFjMS1iOTA5LWQyMjlkMzZkN2Q0MCIsImV4cCI6NDkxNzM2MTUyOH0.a31bOPKDAjLEGmqCJtCEqOq8m4sEo35vrP7bVAN23pnzSi0UF8_jiS4AYfAT5lh9YrGflqvRMmVr27AwH-Yr1w"
+    AI_MODEL: str = "mistralai/Mistral-Nemo-Instruct-2407"
+
     # CORS и общие настройки
     ORIGINS: str = "*"
     ROOT_PATH: str = ""
