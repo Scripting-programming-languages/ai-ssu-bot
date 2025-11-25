@@ -18,7 +18,11 @@ from app.core.config import settings
 from app.api import ssu_bot_api
 from app.api import health_api
 
-qdrant_client: QdrantClient | None = None
+from app.schema.message_schema import MessageCreate, MessageRead
+from app.api.depends import message_service
+from app.core.exception.session_exception import SessionNotFound
+from fastapi import APIRouter, HTTPException, status
+from app.schema.dto.send_query_dto import SendQueryDto
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +30,8 @@ logger = logging.getLogger(__name__)
 
 class SearchQuery(BaseModel):
     query: str 
+
+qdrant_client: QdrantClient | None = None
 
 
 # Здесь можно подключить БД, кеш, и т.д.
@@ -85,6 +91,21 @@ def create_app() -> FastAPI:
             return {"error": "Qdrant client is not initialized"}
         result = await asyncio.to_thread(search_qdrant, search_query.query, qdrant_client)
         return result
+
+    @app.post("/sendQuery", response_model=MessageRead)
+    async def send_query(request: SendQueryDto):
+        
+        global qdrant_client
+        try:
+            async with database.session() as session:
+                new_message = await message_service.process_user_query(
+                    session=session,
+                    dto=request,
+                    qdrant_client=qdrant_client
+                )
+        except SessionNotFound as error:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
+        return new_message
 
     return app
 
