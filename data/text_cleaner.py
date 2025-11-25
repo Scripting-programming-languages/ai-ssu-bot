@@ -4,28 +4,33 @@ from pathlib import Path
 
 
 def clean_text(text: str) -> str:
-    text = re.sub(r"<[^>]+>", " ", text) 
-    text = re.sub(r"http\S+", "", text) 
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"http\S+", "", text)
     text = re.sub(r"(наверх|рисунок|фото:.*|изображение:.*)", "", text, flags=re.IGNORECASE)
     text = re.sub(r"[\*\#•«»\"“”]", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
-def chunk_text(text: str, max_len: int = 500):
+def chunk_text(text: str, max_chars: int = 1500, overlap: int = 150):
     sentences = re.split(r"(?<=[.!?])\s+", text)
-    chunks, current = [], []
+    chunks = []
+    current_chunk = ""
 
     for s in sentences:
-        words = s.split()
-        if len(current) + len(words) > max_len:
-            chunks.append(" ".join(current))
-            current = words
+        if len(current_chunk) + len(s) + 1 <= max_chars:
+            current_chunk += (" " + s).strip()
         else:
-            current.extend(words)
+            if current_chunk:
+                chunks.append(current_chunk)
 
-    if current:
-        chunks.append(" ".join(current))
+            overlap_text = current_chunk[-overlap:].strip() if current_chunk else ""
+
+            current_chunk = (overlap_text + " " + s).strip()
+
+    if current_chunk:
+        chunks.append(current_chunk)
+
     return chunks
 
 
@@ -35,6 +40,10 @@ def process_json(path: str):
 
     all_chunks = []
     idx = 1
+    
+    MAX_CHARS_FOR_CHUNK = 750
+    OVERLAP_CHARS = 80
+    MIN_CHARS_FOR_CHUNK = 150
 
     for item in data:
         raw_text = item.get("content") or ""
@@ -42,10 +51,10 @@ def process_json(path: str):
             continue
 
         clean = clean_text(raw_text)
-        chunks = chunk_text(clean)
+        chunks = chunk_text(clean, max_chars=MAX_CHARS_FOR_CHUNK, overlap=OVERLAP_CHARS)
 
         for ch in chunks:
-            if len(ch.split()) < 20:
+            if len(ch) < MIN_CHARS_FOR_CHUNK:
                 continue
 
             all_chunks.append({

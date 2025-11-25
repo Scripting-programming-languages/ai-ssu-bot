@@ -4,9 +4,11 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
+from pydantic import BaseModel
 from qdrant_client import QdrantClient
 
 from upd_qdrant import update_qdrant
+from search import search_qdrant
 
 import uvicorn
 from fastapi import FastAPI, APIRouter
@@ -22,6 +24,9 @@ qdrant_client: QdrantClient | None = None
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+class SearchQuery(BaseModel):
+    query: str 
+
 
 # Здесь можно подключить БД, кеш, и т.д.
 @asynccontextmanager
@@ -29,7 +34,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     global qdrant_client
 
     try:
-        qdrant_client = QdrantClient(host=os.environ["QDRANT_HOST"], port=os.environ["QDRANT_PORT"])
+        qdrant_client = QdrantClient(
+            host=os.environ["QDRANT_HOST"], 
+            port=os.environ["QDRANT_PORT"],
+            timeout=180)
         logger.info("Connected to Qdrant")
     except Exception as e:
         logger.error(f"Failed to connect to Qdrant: {e}")
@@ -68,6 +76,14 @@ def create_app() -> FastAPI:
         if not qdrant_client:
             return {"error": "Qdrant client is not initialized"}
         result = await asyncio.to_thread(update_qdrant, qdrant_client)
+        return result
+
+    @app.post("/search-qdrant")
+    async def search_qdrant_endpoint(search_query: SearchQuery):
+        global qdrant_client
+        if not qdrant_client:
+            return {"error": "Qdrant client is not initialized"}
+        result = await asyncio.to_thread(search_qdrant, search_query.query, qdrant_client)
         return result
 
     return app

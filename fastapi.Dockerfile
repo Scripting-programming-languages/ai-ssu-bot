@@ -10,7 +10,6 @@ ENV PYTHONPATH=/backend/
 
 # Установка зависимостей напрямую через pip
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir https://download.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl
 RUN pip install --no-cache-dir .
 
 RUN chmod +x ./start.sh
