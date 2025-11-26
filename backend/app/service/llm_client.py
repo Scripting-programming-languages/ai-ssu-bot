@@ -11,7 +11,7 @@ def ask_llm(message_text: str) -> str:
     payload = {
         "model": settings.AI_MODEL,
         "messages": [
-            {"role": "system", "content": "Ты универсальный агент"},
+            {"role": "system", "content": "Ты универсальный агент, который отвечает на вопросы абитуриентов, используя дополнительную информацию из базы знаний"},
             {"role": "user", "content": message_text},
         ]
     }

@@ -19,19 +19,6 @@ async def add_chat():
     return new_session
 
 
-@router.post("/sendQuery", response_model=MessageRead)
-async def send_query(request: SendQueryDto):
-    try:
-        async with database.session() as session:
-            new_message = await message_service.process_user_query(
-                session=session,
-                dto=request
-            )
-    except SessionNotFound as error:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error))
-    return new_message
-
-
 @router.delete("/clearChat")
 async def clear_chat(sessionId: UUID):
     try:

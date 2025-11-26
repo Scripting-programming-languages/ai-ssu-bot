@@ -15,7 +15,8 @@ dependencies = [
     "asyncpg (>=0.30.0,<0.31.0)",
     "uvicorn (>=0.37.0,<0.38.0)",
     "qdrant-client (>=1.9.0,<2.0.0)",  
-    "model2vec"
+    "model2vec",  
+    "requests (>=2.32.5,<3.0.0)"
 ]
 
 

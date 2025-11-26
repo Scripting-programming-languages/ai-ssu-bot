@@ -13,7 +13,8 @@ class MessageRepository:
     async def create_message(self, session: AsyncSession, message: MessageCreate) -> MessageRead:
         query = insert(self._collection).values(
             session_id=message.session_id,
-            content=message.content
+            content=message.content,
+            answer=message.answer
         ).returning(self._collection)
 
         created_message = await session.scalar(query)
