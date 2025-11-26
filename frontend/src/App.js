@@ -144,6 +144,9 @@ function App() {
             />
             <button onClick={handleSendMessage} disabled={!sessionId}>➤</button>
           </div>
+          <div className="disclaimer">
+            Ответы генерируются ИИ и могут содержать неточности.
+          </div>
         </footer>
       </div>
     </div>
