@@ -23,7 +23,7 @@ function App() {
         });
         if (!sessionResponse.ok) throw new Error('Ошибка создания сессии');
         const sessionData = await sessionResponse.json();
-        setSessionId(sessionData.sessionId);
+        setSessionId(sessionData.id);
 
         const faqResponse = await fetch(`${API_BASE_URL}/getFAQ`);
         if (!faqResponse.ok) throw new Error('Ошибка загрузки FAQ');
@@ -73,7 +73,7 @@ function App() {
 
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: data.result, sender: 'bot' },
+        { text: data.answer, sender: 'bot' },
       ]);
 
     } catch (error) {
