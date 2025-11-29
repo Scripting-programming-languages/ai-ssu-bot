@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 COLLECTION_NAME = "ssu_docs"
 
-def search_qdrant(query_text: str, qdrant_client: QdrantClient, top_k: int = 3) -> str:
+def search_qdrant(query_text: str, qdrant_client: QdrantClient, top_k: int = 3) -> List:
     
     query_vector = embedding_model.encode(query_text).tolist()
 
@@ -29,12 +29,8 @@ def search_qdrant(query_text: str, qdrant_client: QdrantClient, top_k: int = 3) 
         text_fragment = hit.payload.get("text", "Текст отсутствует")
         score = hit.score
         
-        result_parts.append(
-            f"--- Фрагмент {i + 1} (Релевантность: {score:.4f}) ---\n"
-            f"Источник: **{source}**\n"
-            f"Текст: {text_fragment}\n"
-        )
+        result_parts.append([source, text_fragment])
     
-    final_context = "\n\n".join(result_parts)
+    #final_context = "\n\n".join(result_parts)
 
-    return f"'{query_text}'\n\n{final_context}"
+    return result_parts

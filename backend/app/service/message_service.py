@@ -26,8 +26,19 @@ class MessageService:
         # Проверяем наличие по session_id активной сессии
         await self.session_repo.check_active_session(session=session, session_id=dto.sessionId)
 
-        qdrant_context = search_qdrant(dto.query, qdrant_client, 1)
-        answer = ask_llm("вопрос: " + dto.query + " | контекст: " + qdrant_context)
+        qdrant_context = search_qdrant(dto.query, qdrant_client)
+
+        text = ""
+        for el in qdrant_context:
+            text += el[1] + " "
+        
+        print(text)
+        answer = ask_llm("Ответь на этот вопрос, используя данный контекст. Не придумывай. Нет нужной информации - так и скажи. Необязательно точный ответ на вопрос, подойдет общая информация по теме. Еще не говори в начале, что согласно контексту. Просто сразу отвечай. Вопрос: " + dto.query + " | контекст: " + text)
+
+        answer += "\n Источники: " 
+
+        for el in qdrant_context:
+            answer += el[0] + '\n'
 
         message_dto: MessageCreate = MessageCreate(
             session_id=dto.sessionId,
