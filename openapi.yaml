@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: Chat Assistant for Applicants
+  version: 1.0.0
+  description: |
+    API для чат-бота — умного помощника абитуриентов СГУ.
+    Система использует RAG-модель для ответов на вопросы о поступлении и обучении.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Chat
+    description: Методы для взаимодействия с чат-ботом
+  - name: FAQ
+    description: Часто задаваемые вопросы
+
+paths:
+  /addChat:
+    post:
+      tags: [Chat]
+      summary: Создать новый чат (сессию)
+      description: Создает новую сессию для пользователя. Возвращает UUID.
+      responses:
+        '200':
+          description: Успешное создание новой сессии
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    format: uuid
+                    description: Уникальный идентификатор сессии
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /sendQuery:
+    post:
+      tags: [Chat]
+      summary: Отправить запрос пользователем
+      description: Отправляет текстовый вопрос чат-боту.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "Какие сроки подачи документов?"
+                  description: Запрос пользователя
+                sessionId:
+                  type: string
+                  format: uuid
+                  description: Идентификатор текущей сессии
+      responses:
+        '200':
+          description: Успешный ответ чат-бота
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Ответ от нейросети
+                    example: "Подача документов проходит с 20 июня по 25 июля."
+        '400':
+          description: Неверные параметры запроса
+        '500':
+          description: Ошибка при обработке запроса
+
+  /clearChat:
+    delete:
+      tags: [Chat]
+      summary: Очистить историю чата
+      description: Удаляет историю сообщений для указанной сессии.
+      parameters:
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор сессии
+      responses:
+        '200':
+          description: Чат успешно очищен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "cleared"
+        '404':
+          description: Сессия не найдена
+
+  /getFAQ:
+    get:
+      tags: [FAQ]
+      summary: Получить список популярных вопросов
+      description: Возвращает список наиболее часто задаваемых вопросов абитуриентов.
+      responses:
+        '200':
+          description: Список FAQ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FAQItem'
+        '500':
+          description: Ошибка при загрузке данных
+
+  /getFAQ/{id}:
+    get:
+      tags: [FAQ]
+      summary: Получить конкретный FAQ по ID
+      description: Возвращает вопрос и ответ для указанного ID FAQ.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: Идентификатор FAQ
+      responses:
+        '200':
+          description: Найденный вопрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FAQItem'
+        '404':
+          description: FAQ не найден
+
+components:
+  schemas:
+    FAQItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        question:
+          type: string
+          example: "Как подать документы?"
+        answer:
+          type: string
+          example: "Через личный кабинет абитуриента."
